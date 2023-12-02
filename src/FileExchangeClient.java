@@ -50,12 +50,27 @@ public class FileExchangeClient {
 
                 out.println(userInputString);
 
+                // User wants to check all commands
+                if ("/?".equals(userInputString)) {
+                    System.out.print("""
+                                     Available commands:
+                                     /join <server_ip_add> <port>
+                                     /leave
+                                     /register <handle>
+                                     /store <filename>
+                                     /dir
+                                     /get <filename>
+                                     /?
+                                     """);
+                }
+
                 // Check if the user wants to leave the server
                 if ("/leave".equals(userInputString)) {
                     String serverResponse = in.readLine();
                     System.out.println(serverResponse);
                     break;
                 }
+
 
                 // Print server responses
                 String serverResponse;

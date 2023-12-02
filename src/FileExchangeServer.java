@@ -78,11 +78,10 @@ public class FileExchangeServer {
             // Implement logic to handle fetching a file
             // Extract the filename from the command
             // ...
-        } else if (command.equals("?")) {
-            // Implement logic to provide command help
-            // ...
+        } else if (command.startsWith("/?")) {
+            out.println();
         } else {
-            // Unknown command, you can handle or ignore as needed
+            out.println("Error: Command not found.");
         }
     }
 }
