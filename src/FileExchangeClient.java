@@ -5,6 +5,10 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class FileExchangeClient {
+
+    private static final String SERVER_IP = "127.0.0.1";
+    private static final int SERVER_PORT = 12345;
+
     public static void main(String[] args) {
         try {
 
@@ -14,7 +18,6 @@ public class FileExchangeClient {
             String[] parts;
             boolean isValid;
             do {
-                isValid = true;
 
                 // Input Syntax: /join <server_ip_add> <port>
                 System.out.print("Enter command (e.g., /join 127.0.0.1 12345): ");
@@ -23,6 +26,7 @@ public class FileExchangeClient {
                 parts = input.split(" ");
 
                 // Request for Syntax commands
+                isValid = true;
                 if (input.equals("/?")) {
                     System.out.print("""
                                      Available commands:
@@ -35,16 +39,26 @@ public class FileExchangeClient {
                                      /?
                                      """);
                     isValid = false;
+                } else if (input.equals("/leave")) {
+                    System.out.println("Error: Disconnection failed. Please connect to the server first.");
+                    isValid = false;
                 } else if (!input.startsWith("/join") || parts.length != 3) {
                     System.out.println("Error: Command parameters do not match or is not allowed.");
-                    return;
+                    isValid = false;
                 } else {
                     String serverIp = parts[1];
-                    int port = Integer.parseInt(parts[2]);
+                    int port;
+                    try {
+                        port = Integer.parseInt(parts[2]);
 
-                    // Checking for valid port and IP
-                    if (!(serverIp.equals("127.0.0.1") && port == 12345)) {
-                        System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
+                        // Checking for a valid server IP and port
+                        if (!(serverIp.equals(SERVER_IP) && port == SERVER_PORT)) {
+                            System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
+                            isValid = false;
+                        }
+                    } catch (NumberFormatException e) {
+                        // Handle the case where the port is not a valid integer
+                        System.out.println("Error: Invalid port number. Please provide a valid integer for the port.");
                         isValid = false;
                     }
 

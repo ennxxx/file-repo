@@ -98,7 +98,7 @@ public class FileExchangeServer {
             for (int i = 0; i < files.length; i++) {
                 fileNames[i] = files[i].getName();
             }
-            out.println("Files: " + String.join(", ", fileNames));
+            out.println("Server Directory: " + String.join(", ", fileNames));
         } else {
             out.println("Server says: No files in the server directory.");
         }
@@ -117,7 +117,7 @@ public class FileExchangeServer {
                     byte[] fileContent = Files.readAllBytes(serverFilePath);
                     Files.write(clientFilePath, fileContent);
                     clientFilePath.toFile().getParentFile().list();
-                    out.println("File successfully fetched and saved to ClientDirectory");
+                    out.println("File received from Server: " + filename);
                 } catch (IOException e) {
                     e.printStackTrace();
                     out.println("Error: Unable to fetch or save the file.");
