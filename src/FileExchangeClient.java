@@ -11,18 +11,46 @@ public class FileExchangeClient {
             // Establish connection with the server
             System.out.println("Client started...");
 
-            // Input Syntax: /join <server_ip_add> <port>
-            System.out.print("Enter server IP address and port (e.g., /join 127.0.0.1 12345): ");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String input = reader.readLine();
+            String[] parts;
+            boolean isValid;
+            do {
+                isValid = true;
 
-            // Checks for valid "/join" command
+                // Input Syntax: /join <server_ip_add> <port>
+                System.out.print("Enter command (e.g., /join 127.0.0.1 12345): ");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                String input = reader.readLine();
+                parts = input.split(" ");
 
-            String[] parts = input.split(" ");
-            if (!input.startsWith("/join") || parts.length != 3) {
-                System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
-                return;
-            }
+                // Request for Syntax commands
+                if (input.equals("/?")) {
+                    System.out.print("""
+                                     Available commands:
+                                     /join <server_ip_add> <port>
+                                     /leave
+                                     /register <handle>
+                                     /store <filename>
+                                     /dir
+                                     /get <filename>
+                                     /?
+                                     """);
+                    isValid = false;
+                } else if (!input.startsWith("/join") || parts.length != 3) {
+                    System.out.println("Error: Command parameters do not match or is not allowed.");
+                    return;
+                } else {
+                    String serverIp = parts[1];
+                    int port = Integer.parseInt(parts[2]);
+
+                    // Checking for valid port and IP
+                    if (!(serverIp.equals("127.0.0.1") && port == 12345)) {
+                        System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
+                        isValid = false;
+                    }
+
+                }
+            } while(!isValid);
+
 
             String serverIp = parts[1];
             int port = Integer.parseInt(parts[2]);
