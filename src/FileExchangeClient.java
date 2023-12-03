@@ -11,7 +11,6 @@ public class FileExchangeClient {
 
     public static void main(String[] args) {
         try {
-
             // Establish connection with the server
             System.out.println("Client started...");
 
@@ -65,64 +64,79 @@ public class FileExchangeClient {
                 }
             } while(!isValid);
 
-
             String serverIp = parts[1];
             int port = Integer.parseInt(parts[2]);
-            Socket soc = new Socket(serverIp, port);
-            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-            System.out.println(in.readLine()); //Connection verification
+            Socket soc = null;
+            try {
+                soc = new Socket(serverIp, port);
+                BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+                System.out.println(in.readLine()); // Connection verification
 
-            // TODO: Handle client communication or file transfer here
+                // TODO: Handle client communication or file transfer here
 
-            // Create input and output streams for communication with the server
-            BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
-            PrintWriter out = new PrintWriter(soc.getOutputStream(), true);
+                // Create input and output streams for communication with the server
+                BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
+                PrintWriter out = new PrintWriter(soc.getOutputStream(), true);
 
-            // Read user input and send it to the server
-            String userInputString;
-            while (true) {
-                // Print a prompt for the user
-                System.out.print("Enter command: ");
-                userInputString = userInput.readLine();
+                // Read user input and send it to the server
+                String userInputString;
+                while (true) {
+                    try {
+                        // Print a prompt for the user
+                        System.out.print("Enter command: ");
+                        userInputString = userInput.readLine();
 
-                out.println(userInputString);
+                        out.println(userInputString);
 
-                // User wants to check all commands
-                if ("/?".equals(userInputString)) {
-                    System.out.print("""
-                                     Available commands:
-                                     /join <server_ip_add> <port>
-                                     /leave
-                                     /register <handle>
-                                     /store <filename>
-                                     /dir
-                                     /get <filename>
-                                     /?
-                                     """);
+                        // User wants to check all commands
+                        if ("/?".equals(userInputString)) {
+                            System.out.print("""
+                                             Available commands:
+                                             /join <server_ip_add> <port>
+                                             /leave
+                                             /register <handle>
+                                             /store <filename>
+                                             /dir
+                                             /get <filename>
+                                             /?
+                                             """);
+                        }
+
+                        // Check if the user wants to leave the server
+                        if ("/leave".equals(userInputString)) {
+                            String serverResponse = in.readLine();
+                            System.out.println(serverResponse);
+                            break;
+                        }
+
+                        // Print server responses
+                        String serverResponse;
+                        while ((serverResponse = in.readLine()) != null) {
+                            System.out.println(serverResponse);
+                            break;
+                        }
+                    } catch (IOException e) {
+                        // Handle communication error with the server
+                        System.out.println("Error: Communication with the server failed. Exiting...");
+                        break;
+                    }
                 }
 
-
-                // Check if the user wants to leave the server
-                if ("/leave".equals(userInputString)) {
-                    String serverResponse = in.readLine();
-                    System.out.println(serverResponse);
-                    break;
-                }
-
-
-                // Print server responses
-                String serverResponse;
-                while ((serverResponse = in.readLine()) != null) {
-                    System.out.println(serverResponse);
-                    break;
+                // Close resources
+                userInput.close();
+                in.close();
+                out.close();
+            } catch (IOException e) {
+                System.out.println("Error: Unable to connect to the server. Please make sure the server is running.");
+            } finally {
+                if (soc != null && !soc.isClosed()) {
+                    try {
+                        soc.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-
-            // Close resources
-            userInput.close();
-            in.close();
-            out.close();
-            soc.close();
 
         } catch (IOException e) {
             e.printStackTrace();
