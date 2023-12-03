@@ -12,20 +12,15 @@ public class FileExchangeClient {
             System.out.println("Client started...");
 
             // Input Syntax: /join <server_ip_add> <port>
-            System.out.print("Enter server IP address and port (e.g., /join 127.0.0.1 9806): ");
+            System.out.print("Enter server IP address and port (e.g., /join 127.0.0.1 12345): ");
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             String input = reader.readLine();
 
             // Checks for valid "/join" command
-            if (!input.startsWith("/join")) {
-                System.out.println("Invalid syntax. Use /join <server_ip_add> <port>");
-                return;
-            }
 
-            // Checks for valid "/join" parameters
             String[] parts = input.split(" ");
-            if (parts.length != 3) {
-                System.out.println("Invalid syntax. Use /join <server_ip_add> <port>");
+            if (!input.startsWith("/join") || parts.length != 3) {
+                System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
                 return;
             }
 
@@ -64,6 +59,7 @@ public class FileExchangeClient {
                                      """);
                 }
 
+
                 // Check if the user wants to leave the server
                 if ("/leave".equals(userInputString)) {
                     String serverResponse = in.readLine();
@@ -76,7 +72,7 @@ public class FileExchangeClient {
                 String serverResponse;
                 while ((serverResponse = in.readLine()) != null) {
                     System.out.println(serverResponse);
-                    break; // Assuming one response per command for simplicity
+                    break;
                 }
             }
 

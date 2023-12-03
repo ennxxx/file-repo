@@ -1,6 +1,9 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,12 +11,14 @@ public class FileExchangeServer {
 
     // Map to store handles (alias) associated with client sockets
     private static final Map<String, Socket> clientHandles = new HashMap<>();
+    private static final String SERVER_DIRECTORY = "ServerDirectory";
+    private static final String CLIENT_DIRECTORY = "ClientDirectory";
 
     public static void main(String[] args) {
         try {
             System.out.println("File Exchange Server is running...");
 
-            ServerSocket serverSocket = new ServerSocket(9806);
+            ServerSocket serverSocket = new ServerSocket(12345);
 
             while (true) {
                 // Wait for a client to connect
@@ -38,9 +43,23 @@ public class FileExchangeServer {
             out.println("Server says: Connection to the File Exchange Server is Successful");
 
             // Handle client commands in a loop
-            String input;
-            while ((input = in.readLine()) != null) {
-                handleCommand(clientSocket, out, input);
+            String command;
+            while ((command = in.readLine()) != null) {
+                if (command.startsWith("/leave")) {
+                    out.println("Server says: Connection closed. Thank you!");
+                } else if (command.startsWith("/register")) {
+                    registerHandle();
+                } else if (command.startsWith("/store")) {
+                    sendFile();
+                } else if (command.startsWith("/dir")) {
+                    requestDirectory(out);
+                } else if (command.startsWith("/get")) {
+                    fetchFile(command, out);
+                } else if (command.startsWith("/?")) {
+                    out.println();
+                } else {
+                    out.println("Error: Command not found.");
+                }
             }
 
             // Client has disconnected
@@ -55,33 +74,59 @@ public class FileExchangeServer {
         }
     }
 
-    private static void handleCommand(Socket clientSocket, PrintWriter out, String command) {
-        // Implement logic to handle different commands
-        // You need to parse the command and perform corresponding actions
-        // based on the provided syntax
+    /* TODO: Register a unique handle or alias */
+    private static void registerHandle() {
+        // Implement logic to handle user registration
+        // Extract the handle/alias from the command
+        // ...
+    }
 
-        // Example: If the command is "/join <server_ip_add> <port>"
-        if (command.startsWith("/leave")) {
-            out.println("Server says: Connection closed. Thank you!");
-        } else if (command.startsWith("/register")) {
-            // Implement logic to handle user registration
-            // Extract the handle/alias from the command
-            // ...
-        } else if (command.startsWith("/store")) {
-            // Implement logic to handle storing a file
-            // Extract the filename from the command
-            // ...
-        } else if (command.startsWith("/dir")) {
-            // Implement logic to handle listing directory files
-            // ...
-        } else if (command.startsWith("/get")) {
-            // Implement logic to handle fetching a file
-            // Extract the filename from the command
-            // ...
-        } else if (command.startsWith("/?")) {
-            out.println();
+    /* TODO: Send file to server */
+    private static void sendFile() {
+        // Implement logic to handle storing a file
+        // Extract the filename from the command
+        // ...
+    }
+
+    /* TODO: Request directory file list from a server */
+    private static void requestDirectory(PrintWriter out) {
+        File serverDirectory = new File(SERVER_DIRECTORY);
+        File[] files = serverDirectory.listFiles();
+
+        if (files != null) {
+            String[] fileNames = new String[files.length];
+            for (int i = 0; i < files.length; i++) {
+                fileNames[i] = files[i].getName();
+            }
+            out.println("Files: " + String.join(", ", fileNames));
         } else {
-            out.println("Error: Command not found.");
+            out.println("Server says: No files in the server directory.");
+        }
+    }
+
+    /* TODO: Fetch a file from a server */
+    private static void fetchFile(String command, PrintWriter out) {
+        String[] tokens = command.split("\\s+");
+        if (tokens.length == 2) {
+            String filename = tokens[1];
+            Path serverFilePath = Paths.get(SERVER_DIRECTORY, filename);
+            Path clientFilePath = Paths.get(CLIENT_DIRECTORY, filename);
+
+            if (Files.exists(serverFilePath)) {
+                try {
+                    byte[] fileContent = Files.readAllBytes(serverFilePath);
+                    Files.write(clientFilePath, fileContent);
+                    clientFilePath.toFile().getParentFile().list();
+                    out.println("File successfully fetched and saved to ClientDirectory");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    out.println("Error: Unable to fetch or save the file.");
+                }
+            } else {
+                out.println("Error: File not found on the server.");
+            }
+        } else {
+            out.println("Error: Command parameters do not match or is not allowed.");
         }
     }
 }

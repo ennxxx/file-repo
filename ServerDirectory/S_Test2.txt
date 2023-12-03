@@ -1,0 +1,3 @@
+S_Test2.txt content
+Hello madlang people
+Mabuhay!
