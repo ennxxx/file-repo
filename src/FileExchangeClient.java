@@ -12,14 +12,15 @@ public class FileExchangeClient {
     public static void main(String[] args) {
         try {
             // Establish connection with the server
-            System.out.println("Client started...");
+            System.out.println("\nClient started...");
+            System.out.println("\n[/join <server_ip_add> <port>] \t: Connect to a server application");
+            System.out.println("[/?] \t\t\t\t: Request commend help");
 
             String[] parts;
             boolean isValid;
             do {
-
                 // Input Syntax: /join <server_ip_add> <port>
-                System.out.print("Enter command (e.g., /join 127.0.0.1 12345): ");
+                System.out.print("\nEnter command: ");
                 BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
                 String input = reader.readLine();
                 parts = input.split(" ");
@@ -49,7 +50,6 @@ public class FileExchangeClient {
                     int port;
                     try {
                         port = Integer.parseInt(parts[2]);
-
                         // Checking for a valid server IP and port
                         if (!(serverIp.equals(SERVER_IP) && port == SERVER_PORT)) {
                             System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
@@ -83,7 +83,7 @@ public class FileExchangeClient {
                 while (true) {
                     try {
                         // Print a prompt for the user
-                        System.out.print("Enter command: ");
+                        System.out.print("\nEnter command: ");
                         userInputString = userInput.readLine();
 
                         out.println(userInputString);

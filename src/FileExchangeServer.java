@@ -16,7 +16,7 @@ public class FileExchangeServer {
 
     public static void main(String[] args) {
         try {
-            System.out.println("File Exchange Server is running...");
+            System.out.println("\nFile Exchange Server is running...");
 
             ServerSocket serverSocket = new ServerSocket(12345);
 
@@ -40,7 +40,7 @@ public class FileExchangeServer {
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
             // Initial greeting message to the client
-            out.println("Server says: Connection to the File Exchange Server is Successful");
+            out.println("Server says: Connection to the File Exchange Server is Successful!\n");
 
             // Handle client commands in a loop
             String command;
