@@ -42,14 +42,12 @@ public class FileExchangeServer {
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
     
             // Initial greeting message to the client
-            out.println("Server says: Connection to the File Exchange Server is Successful");
+            out.println("Server says: Connection to the File Exchange Server is successful!");
         
             // Handle client commands in a loop
             String command;
             while ((command = in.readLine()) != null) {
-                if (command.startsWith("/leave")) {
-                    out.println("Server says: Connection closed. Thank you!");
-                } else if (command.startsWith("/register")) {
+                if (command.startsWith("/register")) {
                     registerHandle(command, out, clientSocket);
                 } else if (command.startsWith("/?")) {
                     out.println();
@@ -62,8 +60,6 @@ public class FileExchangeServer {
                             requestDirectory(out);
                         } else if (command.startsWith("/get")) {
                             fetchFile(command, out);
-                        } else if (command.startsWith("/?")) {
-                            out.println();
                         } else {
                             out.println("Error: Command not found.");
                         }
