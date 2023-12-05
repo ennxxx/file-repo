@@ -13,8 +13,8 @@ public class FileExchangeServer {
 
     // Map to store handles (alias) associated with client sockets
     private static final Map<String, Socket> clientHandles = new HashMap<>();
-    private static final String SERVER_DIRECTORY = "../ServerDirectory";
-    private static final String CLIENT_DIRECTORY = "../ClientDirectory";
+    private static final String SERVER_DIRECTORY = "ServerDirectory";
+    private static final String CLIENT_DIRECTORY = "ClientDirectory";
 
     public static void main(String[] args) {
         try {
@@ -82,7 +82,7 @@ public class FileExchangeServer {
         String[] tokens = command.split("\\s+");
 
         if (tokens.length == 2) {
-            String handle = tokens[1];
+            String handle = tokens[1].trim();
 
             // Check if the handle is already registered
             if (clientHandles.containsKey(handle)) {
@@ -92,7 +92,7 @@ public class FileExchangeServer {
                 clientHandles.put(handle, clientSocket);
                 out.println("Welcome " + handle + "!");
             }
-        } 
+        }
     }
 
     private static String getClientHandle(Socket clientSocket) {
@@ -104,13 +104,16 @@ public class FileExchangeServer {
         }
         return "Unknown";
     }
-    
+
     private static void broadcastMessage(String message, Socket senderSocket) {
         // Send the message to all connected clients, excluding the sender
+        String senderHandle = getClientHandle(senderSocket);
+
         for (Map.Entry<String, Socket> entry : clientHandles.entrySet()) {
-            if (!entry.getValue().equals(senderSocket)) {
+            if (entry.getValue().equals(senderHandle)) {
                 try {
                     PrintWriter socketOut = new PrintWriter(entry.getValue().getOutputStream(), true);
+                    System.out.println(message);
                     socketOut.println(message);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -118,7 +121,7 @@ public class FileExchangeServer {
             }
         }
     }
-    
+
     /* TODO: Send file to server */
     private static void sendFile(String command, PrintWriter out, Socket clientSocket) {
         // Extract the filename from the command
