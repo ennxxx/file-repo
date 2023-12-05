@@ -145,7 +145,6 @@ public class Client {
             String serverResponse;
             while ((serverResponse = in.readLine()) != null) {
                 appendToTextArea(serverResponse);
-                System.out.println(serverResponse);
                 return;
             }
 
