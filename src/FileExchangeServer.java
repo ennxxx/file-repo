@@ -47,7 +47,10 @@ public class FileExchangeServer {
             // Handle client commands in a loop
             String command;
             while ((command = in.readLine()) != null) {
-                if (command.startsWith("/register")) {
+                if (command.startsWith("/leave")) {
+                    out.println("Server says: Connection closed. Thank you!");
+                }
+                else if (command.startsWith("/register")) {
                     registerHandle(command, out, clientSocket);
                 } else if (command.startsWith("/?")) {
                     out.println();
