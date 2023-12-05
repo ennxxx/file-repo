@@ -13,8 +13,8 @@ public class FileExchangeServer {
 
     // Map to store handles (alias) associated with client sockets
     private static final Map<String, Socket> clientHandles = new HashMap<>();
-    private static final String SERVER_DIRECTORY = "ServerDirectory";
-    private static final String CLIENT_DIRECTORY = "ClientDirectory";
+    private static final String SERVER_DIRECTORY = "../ServerDirectory";
+    private static final String CLIENT_DIRECTORY = "../ClientDirectory";
 
     public static void main(String[] args) {
         try {
@@ -43,7 +43,7 @@ public class FileExchangeServer {
     
             // Initial greeting message to the client
             out.println("Server says: Connection to the File Exchange Server is Successful");
-    
+        
             // Handle client commands in a loop
             String command;
             while ((command = in.readLine()) != null) {
@@ -51,16 +51,25 @@ public class FileExchangeServer {
                     out.println("Server says: Connection closed. Thank you!");
                 } else if (command.startsWith("/register")) {
                     registerHandle(command, out, clientSocket);
-                } else if (command.startsWith("/store")) {
-                    sendFile(command, out, clientSocket);  // Pass clientSocket here
-                } else if (command.startsWith("/dir")) {
-                    requestDirectory(out);
-                } else if (command.startsWith("/get")) {
-                    fetchFile(command, out);
                 } else if (command.startsWith("/?")) {
                     out.println();
                 } else {
-                    out.println("Error: Command not found.");
+                    // Check if client has already registered
+                    if (getClientHandle(clientSocket) != "Unknown") {
+                        if (command.startsWith("/store")) {
+                            sendFile(command, out, clientSocket);
+                        } else if (command.startsWith("/dir")) {
+                            requestDirectory(out);
+                        } else if (command.startsWith("/get")) {
+                            fetchFile(command, out);
+                        } else if (command.startsWith("/?")) {
+                            out.println();
+                        } else {
+                            out.println("Error: Command not found.");
+                        }
+                    } else {
+                        out.println("Error: Please register before using these commands.");
+                    }
                 }
             }
     
@@ -76,7 +85,7 @@ public class FileExchangeServer {
         }
     }
     
-    /* TODO: Register a unique handle or alias */
+    // Register a unique handle or alias 
     private static void registerHandle(String command, PrintWriter out, Socket clientSocket) {
         // Extract the handle/alias from the command
         String[] tokens = command.split("\\s+");
@@ -95,6 +104,7 @@ public class FileExchangeServer {
         }
     }
 
+    // Get name of client
     private static String getClientHandle(Socket clientSocket) {
         // Find the handle associated with the clientSocket
         for (Map.Entry<String, Socket> entry : clientHandles.entrySet()) {
@@ -105,24 +115,7 @@ public class FileExchangeServer {
         return "Unknown";
     }
 
-    private static void broadcastMessage(String message, Socket senderSocket) {
-        // Send the message to all connected clients, excluding the sender
-        String senderHandle = getClientHandle(senderSocket);
-
-        for (Map.Entry<String, Socket> entry : clientHandles.entrySet()) {
-            if (entry.getValue().equals(senderHandle)) {
-                try {
-                    PrintWriter socketOut = new PrintWriter(entry.getValue().getOutputStream(), true);
-                    System.out.println(message);
-                    socketOut.println(message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    /* TODO: Send file to server */
+    // Send file to server
     private static void sendFile(String command, PrintWriter out, Socket clientSocket) {
         // Extract the filename from the command
         String[] tokens = command.split("\\s+");
@@ -146,9 +139,8 @@ public class FileExchangeServer {
     
                     // Broadcast the message to all connected clients
                     String message = String.format("%s<%s>: Uploaded %s.", getClientHandle(clientSocket), timestamp, filename);
-                    broadcastMessage(message, clientSocket);
-    
                     out.println(message);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                     out.println("Error: Unable to send the file.");
@@ -159,7 +151,7 @@ public class FileExchangeServer {
         } 
     }
 
-    /* TODO: Request directory file list from a server */
+    // Request directory from server
     private static void requestDirectory(PrintWriter out) {
         File serverDirectory = new File(SERVER_DIRECTORY);
         File[] files = serverDirectory.listFiles();
@@ -175,7 +167,7 @@ public class FileExchangeServer {
         }
     }
 
-    /* TODO: Fetch a file from a server */
+    // Fetch file from server
     private static void fetchFile(String command, PrintWriter out) {
         String[] tokens = command.split("\\s+");
         if (tokens.length == 2) {

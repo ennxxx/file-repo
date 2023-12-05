@@ -27,16 +27,7 @@ public class FileExchangeClient {
                 // Request for Syntax commands
                 isValid = true;
                 if (input.equals("/?")) {
-                    System.out.print("""
-                                     Available commands:
-                                     /join <server_ip_add> <port>
-                                     /leave
-                                     /register <handle>
-                                     /store <filename>
-                                     /dir
-                                     /get <filename>
-                                     /?
-                                     """);
+                    System.out.print("Available commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?\n");
                     isValid = false;
                 } else if (input.equals("/leave")) {
                     System.out.println("Error: Disconnection failed. Please connect to the server first.");
@@ -72,8 +63,6 @@ public class FileExchangeClient {
                 BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
                 System.out.println(in.readLine()); // Connection verification
 
-                // TODO: Handle client communication or file transfer here
-
                 // Create input and output streams for communication with the server
                 BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
                 PrintWriter out = new PrintWriter(soc.getOutputStream(), true);
@@ -90,16 +79,7 @@ public class FileExchangeClient {
 
                         // User wants to check all commands
                         if ("/?".equals(userInputString)) {
-                            System.out.print("""
-                                             Available commands:
-                                             /join <server_ip_add> <port>
-                                             /leave
-                                             /register <handle>
-                                             /store <filename>
-                                             /dir
-                                             /get <filename>
-                                             /?
-                                             """);
+                            System.out.print("Available commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?");
                         }
 
                         // Check if the user wants to leave the server
