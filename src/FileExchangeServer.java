@@ -101,6 +101,8 @@ public class FileExchangeServer {
                 clientHandles.put(handle, clientSocket);
                 out.println("Welcome " + handle + "!");
             }
+        } else {
+            out.println("Error: Registration failed. Handle or alias cannot be empty.");
         }
     }
 
