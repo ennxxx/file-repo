@@ -40,10 +40,9 @@ public class FileExchangeServer {
             // Create input and output streams for communication with the client
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-    
-            // Initial greeting message to the client
+            
             out.println("Server says: Connection to the File Exchange Server is Successful");
-    
+
             // Handle client commands in a loop
             String command;
             while ((command = in.readLine()) != null) {
@@ -62,6 +61,7 @@ public class FileExchangeServer {
                 } else {
                     out.println("Error: Command not found.");
                 }
+                System.out.println(command);
             }
     
             // Client has disconnected
