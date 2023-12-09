@@ -1,3 +1,0 @@
-S_Test1.txt content
-Hello!
-Hi UPDATED
