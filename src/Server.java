@@ -56,6 +56,10 @@ public class Server {
                             requestDirectory(out);
                         } else if (command.startsWith("/get")) {
                             fetchFile(command, out);
+                        } else if (command.startsWith("/all")) {
+                            sendMsgBroadcast(command, clientSocket);
+                        } else if (command.startsWith("/msg")) {
+                            sendMsgUnicast(command, clientSocket);
                         } else {
                             out.writeUTF("Error: Command not found.");
                         }
@@ -115,7 +119,7 @@ public class Server {
         return "Unknown";
     }
 
-    private static void broadcastMessage(String message) {
+    private static void broadcast(String message) {
         for (Map.Entry<String, Socket> entry : clientHandles.entrySet()) {
             Socket clientSocket = entry.getValue();
             try {
@@ -124,6 +128,56 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private static void sendMsgBroadcast(String command, Socket senderSocket) {
+        String[] tokens = command.split("\\s+");
+    
+        if (tokens.length > 1) {
+            String senderHandle = getClientHandle(senderSocket);
+            String message = String.join(" ", tokens).substring(tokens[0].length() + 1);
+            String broadcastMessage = String.format("[%s to All]: %s", senderHandle, message);
+            broadcast(broadcastMessage);
+        } else {
+            // Handle the case when there is no message provided after "/all"
+            System.out.println("Error: No message provided for broadcast.");
+        }
+    }
+
+    private static void sendMsgUnicast(String command, Socket senderSocket) {
+        String[] tokens = command.split("\\s+");
+    
+        if (tokens.length > 2) {
+            String recipientHandle = tokens[1];
+            String senderHandle = getClientHandle(senderSocket);
+    
+            // Check if the recipient exists in the clientHandles map
+            if (clientHandles.containsKey(recipientHandle)) {
+                Socket recipientSocket = clientHandles.get(recipientHandle);
+    
+                // Construct the private message
+                String message = String.join(" ", tokens).substring(tokens[0].length() + recipientHandle.length() + 2);
+                String senderMessage = String.format("[To %s]: %s", recipientHandle, message);
+                String recipientMessage = String.format("[From %s]: %s", senderHandle, message);
+    
+                try {
+                    // Send the message to the sender and recipient
+                    DataOutputStream senderOut = new DataOutputStream(senderSocket.getOutputStream());
+                    senderOut.writeUTF(senderMessage);
+    
+                    DataOutputStream recipientOut = new DataOutputStream(recipientSocket.getOutputStream());
+                    recipientOut.writeUTF(recipientMessage);
+    
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Error: Recipient not found.");
+            }
+        } else {
+            // Handle the case when there is no recipient or message provided after "/msg"
+            System.out.println("Error: Invalid /msg command. Usage: /msg <recipient> <message>");
         }
     }
 
@@ -144,7 +198,7 @@ public class Server {
                     String timestamp = dateFormat.format(new Date());
 
                     String message = String.format("%s<%s>: Uploaded %s.", getClientHandle(clientSocket), timestamp, filename);
-                    broadcastMessage(message);
+                    broadcast(message);
 
                 } catch (IOException e) {
                     e.printStackTrace();
