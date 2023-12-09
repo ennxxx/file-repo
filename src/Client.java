@@ -31,10 +31,10 @@ public class Client {
                     System.out.println("\u001B[32mAvailable commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?" + "\u001B[0m");
                     isValid = false;
                 } else if (input.equals("/leave")) {
-                    System.out.println("Error: Disconnection failed. Please connect to the server first.");
+                    System.out.println("\u001B[31mError: Disconnection failed. Please connect to the server first.\u001B[0m");
                     isValid = false;
                 } else if (!input.startsWith("/join") || parts.length != 3) {
-                    System.out.println("Error: Command parameters do not match or is not allowed.");
+                    System.out.println("\u001B[31mError: Command parameters do not match or are not allowed.\u001B[0m");
                     isValid = false;
                 } else {
                     String serverIp = parts[1];
@@ -44,12 +44,12 @@ public class Client {
 
                         // Checking for a valid server IP and port
                         if (!(serverIp.equals(SERVER_IP) && port == SERVER_PORT)) {
-                            System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
+                            System.out.println("\u001B[31mError: Connection to the Server has failed! Please check IP Address and Port Number.\u001B[0m");
                             isValid = false;
                         }
                     } catch (NumberFormatException e) {
                         // Handle the case where the port is not a valid integer
-                        System.out.println("Error: Invalid port number. Please provide a valid integer for the port.");
+                        System.out.println("\u001B[31mError: Invalid port number. Please provide a valid integer for the port.\u001B[0m");
                         isValid = false;
                     }
 
@@ -104,12 +104,12 @@ public class Client {
                         }
                     } catch (IOException e) {
                         // Handle communication error with the server
-                        System.out.println("Error: Communication with the server failed. Exiting...");
+                        System.out.println("\u001B[31mError: Communication with the server failed. Exiting...\u001B[0m");
                         System.exit(1);
                     }
                 }
             } catch (IOException e) {
-                System.out.println("Error: Unable to connect to the server. Please make sure the server is running.");
+                System.out.println("\u001B[31mError: Unable to connect to the server. Please make sure the server is running.\u001B[0m");
             }
         } catch (IOException e) {
             e.printStackTrace();
