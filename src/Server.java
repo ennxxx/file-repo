@@ -62,10 +62,10 @@ public class Server {
                         } else if (command.startsWith("/msg")) {
                             sendMsgUnicast(command, clientSocket);
                         } else {
-                            out.writeUTF("\u001B[31mError: Command not found.\u001B[0m");
+                            out.writeUTF("\u001B[31mError: Command not found.\n\u001B[0m");
                         }
                     } else {
-                        out.writeUTF("\u001B[31mError: Please register before using these commands.\u001B[0m");
+                        out.writeUTF("\u001B[31mError: Please register before using these commands.\n\u001B[0m");
                     }
                 }
             }
@@ -90,21 +90,21 @@ public class Server {
 
             if (clientHandles.containsKey(handle)) {
                 try {
-                    out.writeUTF("\u001B[31mError: Registration failed. Handle or alias already exists.\u001B[0m");
+                    out.writeUTF("\u001B[31mError: Registration failed. Handle or alias already exists.\n\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
                 clientHandles.put(handle, clientSocket);
                 try {
-                    out.writeUTF("\u001B[32mWelcome " + handle + "!\u001B[0m");
+                    out.writeUTF("\u001B[32mWelcome " + handle + "!\n\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         } else {
             try {
-                out.writeUTF("\u001B[31mError: Registration failed. Handle or alias cannot be empty.\u001B[0m");
+                out.writeUTF("\u001B[31mError: Registration failed. Handle or alias cannot be empty.\n\u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -138,11 +138,11 @@ public class Server {
         if (tokens.length > 1) {
             String senderHandle = getClientHandle(senderSocket);
             String message = String.join(" ", tokens).substring(tokens[0].length() + 1);
-            String broadcastMessage = String.format("[%s to All]: %s", senderHandle, message);
+            String broadcastMessage = String.format("\u001B[32m[%s to All]: %s\n\u001B[0m", senderHandle, message);
             broadcast(broadcastMessage);
         } else {
             // Handle the case when there is no message provided after "/all"
-            System.out.println("Error: No message provided for broadcast.");
+            System.out.println("\u001B[31mError: No message provided for broadcast.\n\u001B[0m");
         }
     }
 
@@ -159,8 +159,8 @@ public class Server {
     
                 // Construct the private message
                 String message = String.join(" ", tokens).substring(tokens[0].length() + recipientHandle.length() + 2);
-                String senderMessage = String.format("[To %s]: %s", recipientHandle, message);
-                String recipientMessage = String.format("[From %s]: %s", senderHandle, message);
+                String senderMessage = String.format("\u001B[32m[To %s]: %s\n\u001B[0m", recipientHandle, message);
+                String recipientMessage = String.format("\u001B[32m[From %s]: %s\n\u001B[0m", senderHandle, message);
     
                 try {
                     // Send the message to the sender and recipient
@@ -174,11 +174,11 @@ public class Server {
                     e.printStackTrace();
                 }
             } else {
-                System.out.println("Error: Recipient not found.");
+                System.out.println("\u001B[31mError: Recipient not found.\n\u001B[0m");
             }
         } else {
             // Handle the case when there is no recipient or message provided after "/msg"
-            System.out.println("Error: Invalid /msg command. Usage: /msg <recipient> <message>");
+            System.out.println("\u001B[31mError: Invalid /msg command. Usage: /msg <recipient> <message>\n\u001B[0m");
         }
     }
 
@@ -198,20 +198,20 @@ public class Server {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     String timestamp = dateFormat.format(new Date());
 
-                    String message = String.format("\u001B[32m%s<%s>: Uploaded %s.\u001B[0m", getClientHandle(clientSocket), timestamp, filename);
+                    String message = String.format("\u001B[32m%s<%s>: Uploaded %s\n\u001B[0m", getClientHandle(clientSocket), timestamp, filename);
                     broadcast(message);
 
                 } catch (IOException e) {
                     e.printStackTrace();
                     try {
-                        out.writeUTF("\u001B[31mError: Unable to send the file.\u001B[0m");
+                        out.writeUTF("\u001B[31mError: Unable to send the file.\n\u001B[0m");
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }
                 }
             } else {
                 try {
-                    out.writeUTF("\u001B[31mError: File not found on the client side.\u001B[0m");
+                    out.writeUTF("\u001B[31mError: File not found on the client side.\n\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -229,13 +229,13 @@ public class Server {
                 fileNames[i] = files[i].getName();
             }
             try {
-                out.writeUTF("\u001B[32mServer Directory: " + String.join(", ", fileNames) + "\u001B[0m");
+                out.writeUTF("\u001B[36mServer Directory: " + String.join(", ", fileNames) + "\n\u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                out.writeUTF("\u001B[32mServer says: No files in the server directory.\u001B[0m");
+                out.writeUTF("\u001B[36mServer says: No files in the server directory.\n\u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -254,25 +254,25 @@ public class Server {
                     byte[] fileContent = Files.readAllBytes(serverFilePath);
                     Files.write(clientFilePath, fileContent);
                     clientFilePath.toFile().getParentFile().list();
-                    out.writeUTF("\u001B[32mFile received from Server: " + filename + "\u001B[0m");
+                    out.writeUTF("\u001B[36mFile received from Server: " + filename + "\n\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                     try {
-                        out.writeUTF("\u001B[31mError: Unable to fetch or save the file.\u001B[0m");
+                        out.writeUTF("\u001B[31mError: Unable to fetch or save the file.\n\u001B[0m");
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }
                 }
             } else {
                 try {
-                    out.writeUTF("\u001B[31mError: File not found on the server.\u001B[0m");
+                    out.writeUTF("\u001B[31mError: File not found on the server.\n\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         } else {
             try {
-                out.writeUTF("\u001B[31mError: Command parameters do not match or are not allowed.\u001B[0m");
+                out.writeUTF("\u001B[31mError: Command parameters do not match or are not allowed.\n\u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }

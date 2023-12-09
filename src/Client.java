@@ -11,16 +11,19 @@ public class Client {
     private static final int SERVER_PORT = 12345;
 
     public static void main(String[] args) {
-        System.out.println("\u001B[32mClient started...\u001B[0m");
+        System.out.println("\u001B[32mClient started...\u001B[0m\n");
 
         try {
             // Establish connection with the server
             String[] parts;
             boolean isValid;
+            
+            System.out.println("\u001B[32mJoin a server given its IP address and port number.");
+            System.out.println("\u001B[32m(Type \"/?\" to check for the commands)\n\u001B[0m");
+            
             do {
 
                 // Input Syntax: /join <server_ip_add> <port>
-                System.out.print("Enter command: ");
                 BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
                 String input = reader.readLine();
                 parts = input.split(" ");
@@ -28,13 +31,13 @@ public class Client {
                 // Request for Syntax commands
                 isValid = true;
                 if (input.equals("/?")) {
-                    System.out.println("\u001B[32mAvailable commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?\u001B[0m");
+                    System.out.println("\u001B[36mAvailable commands:\n/join <server_ip_add> <port>\n/?\n/all <msg>\n/msg <client_handle> <msg>\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/leave\n\u001B[0m");
                     isValid = false;
                 } else if (input.equals("/leave")) {
-                    System.out.println("\u001B[31mError: Disconnection failed. Please connect to the server first.\u001B[0m");
+                    System.out.println("\u001B[31mError: Disconnection failed. Please connect to the server first.\n\u001B[0m");
                     isValid = false;
                 } else if (!input.startsWith("/join") || parts.length != 3) {
-                    System.out.println("\u001B[31mError: Command parameters do not match or is not allowed.\u001B[0m");
+                    System.out.println("\u001B[31mError: Command parameters do not match or is not allowed.\n\u001B[0m");
                     isValid = false;
                 } else {
                     String serverIp = parts[1];
@@ -44,12 +47,12 @@ public class Client {
 
                         // Checking for a valid server IP and port
                         if (!(serverIp.equals(SERVER_IP) && port == SERVER_PORT)) {
-                            System.out.println("\u001B[31mError: Connection to the Server has failed! Please check IP Address and Port Number.\u001B[0m");
+                            System.out.println("\u001B[31mError: Connection to the Server has failed! Please check IP Address and Port Number.\n\u001B[0m");
                             isValid = false;
                         }
                     } catch (NumberFormatException e) {
                         // Handle the case where the port is not a valid integer
-                        System.out.println("\u001B[31mError: Invalid port number. Please provide a valid integer for the port.\u001B[0m");
+                        System.out.println("\u001B[31mError: Invalid port number. Please provide a valid integer for the port.\n\u001B[0m");
                         isValid = false;
                     }
 
@@ -82,7 +85,7 @@ public class Client {
 
                 System.out.println("\u001B[32m\nYou can now interact with the server!");
                 System.out.println("(Type \"/?\" to check for the commands)");
-                System.out.println("--------------------------------------\u001B[0m");
+                System.out.println("--------------------------------------\n\u001B[0m");
 
 
                 // Start a thread to read user input and send it to the server
@@ -96,7 +99,7 @@ public class Client {
 
                         // User wants to check all commands
                         if ("/?".equals(userInputString)) {
-                            System.out.println("\u001B[32mAvailable commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?\u001B[0m");
+                            System.out.println("\u001B[36mAvailable commands:\n/join <server_ip_add> <port>\n/?\n/all <msg>\n/msg <client_handle> <msg>\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/leave\u001B[0m");
                         }
                         // Check if the user wants to leave the server
                         else if ("/leave".equals(userInputString)) {
@@ -104,12 +107,12 @@ public class Client {
                         }
                     } catch (IOException e) {
                         // Handle communication error with the server
-                        System.out.println("Error: Communication with the server failed. Exiting...");
+                        System.out.println("\u001B[31mError: Communication with the server failed. Exiting...\u001B[0m");
                         System.exit(1);
                     }
                 }
             } catch (IOException e) {
-                System.out.println("Error: Unable to connect to the server. Please make sure the server is running.");
+                System.out.println("\u001B[31mError: Unable to connect to the server. Please make sure the server is running.\u001B[0m");
             }
         } catch (IOException e) {
             e.printStackTrace();
