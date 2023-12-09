@@ -17,17 +17,18 @@ public class Server {
 
     public static void main(String[] args) {
         try {
-            System.out.println("File Exchange Server is running...");
+            System.out.println("\u001B[32mFile Exchange Server is running...\u001B[0m");
 
             ServerSocket serverSocket = new ServerSocket(12345);
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
+                System.out.println("\u001B[32mClient connected: " + clientSocket.getRemoteSocketAddress() + "\u001B[0m");
 
                 new Thread(() -> handleClient(clientSocket)).start();
             }
         } catch (IOException e) {
+            System.out.println("\u001B[31mError: " + e.getMessage() + "\u001B[0m");
             e.printStackTrace();
         }
     }
@@ -37,12 +38,12 @@ public class Server {
             DataInputStream in = new DataInputStream(clientSocket.getInputStream());
             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 
-            out.writeUTF("Server says: Connection to the File Exchange Server is successful!");
+            out.writeUTF("\u001B[32m\nServer says: Connection to the File Exchange Server is successful!\u001B[0m");
 
             String command;
             while ((command = in.readUTF()) != null) {
                 if (command.startsWith("/leave")) {
-                    out.writeUTF("Server says: Connection closed. Thank you!");
+                    out.writeUTF("\u001B[32mServer says: Connection closed. Thank you!\u001B[0m");
                     break;
                 } else if (command.startsWith("/register")) {
                     registerHandle(command, out, clientSocket);
@@ -61,22 +62,22 @@ public class Server {
                         } else if (command.startsWith("/msg")) {
                             sendMsgUnicast(command, clientSocket);
                         } else {
-                            out.writeUTF("Error: Command not found.");
+                            out.writeUTF("\u001B[31mError: Command not found.\u001B[0m");
                         }
                     } else {
-                        out.writeUTF("Error: Please register before using these commands.");
+                        out.writeUTF("\u001B[31mError: Please register before using these commands.\u001B[0m");
                     }
                 }
             }
 
-            out.writeUTF("Server says: Connection closed. Thank you!");
-            System.out.println("Client disconnected: " + clientSocket.getRemoteSocketAddress());
+            System.out.println("\u001B[32mClient disconnected: " + clientSocket.getRemoteSocketAddress() + "\u001B[0m");
 
             in.close();
             out.close();
             clientSocket.close();
 
         } catch (IOException e) {
+            System.out.println("\u001B[31mError: " + e.getMessage() + "\u001B[0m");
             e.printStackTrace();
         }
     }
@@ -89,21 +90,21 @@ public class Server {
 
             if (clientHandles.containsKey(handle)) {
                 try {
-                    out.writeUTF("Error: Registration failed. Handle or alias already exists.");
+                    out.writeUTF("\u001B[31mError: Registration failed. Handle or alias already exists.\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
                 clientHandles.put(handle, clientSocket);
                 try {
-                    out.writeUTF("Welcome " + handle + "!");
+                    out.writeUTF("\u001B[32mWelcome " + handle + "!\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         } else {
             try {
-                out.writeUTF("Error: Registration failed. Handle or alias cannot be empty.");
+                out.writeUTF("\u001B[31mError: Registration failed. Handle or alias cannot be empty.\u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -197,20 +198,20 @@ public class Server {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     String timestamp = dateFormat.format(new Date());
 
-                    String message = String.format("%s<%s>: Uploaded %s.", getClientHandle(clientSocket), timestamp, filename);
+                    String message = String.format("\u001B[32m%s<%s>: Uploaded %s.\u001B[0m", getClientHandle(clientSocket), timestamp, filename);
                     broadcast(message);
 
                 } catch (IOException e) {
                     e.printStackTrace();
                     try {
-                        out.writeUTF("Error: Unable to send the file.");
+                        out.writeUTF("\u001B[31mError: Unable to send the file.\u001B[0m");
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }
                 }
             } else {
                 try {
-                    out.writeUTF("Error: File not found on the client side.");
+                    out.writeUTF("\u001B[31mError: File not found on the client side.\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -228,13 +229,13 @@ public class Server {
                 fileNames[i] = files[i].getName();
             }
             try {
-                out.writeUTF("Server Directory: " + String.join(", ", fileNames));
+                out.writeUTF("\u001B[32mServer Directory: " + String.join(", ", fileNames) + "\u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                out.writeUTF("Server says: No files in the server directory.");
+                out.writeUTF("\u001B[32mServer says: No files in the server directory.\u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -253,25 +254,25 @@ public class Server {
                     byte[] fileContent = Files.readAllBytes(serverFilePath);
                     Files.write(clientFilePath, fileContent);
                     clientFilePath.toFile().getParentFile().list();
-                    out.writeUTF("File received from Server: " + filename);
+                    out.writeUTF("\u001B[32mFile received from Server: " + filename + "\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                     try {
-                        out.writeUTF("Error: Unable to fetch or save the file.");
+                        out.writeUTF("\u001B[31mError: Unable to fetch or save the file.\u001B[0m");
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }
                 }
             } else {
                 try {
-                    out.writeUTF("Error: File not found on the server.");
+                    out.writeUTF("\u001B[31mError: File not found on the server.\u001B[0m");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         } else {
             try {
-                out.writeUTF("Error: Command parameters do not match or are not allowed.");
+                out.writeUTF("\u001B[31mError: Command parameters do not match or are not allowed.\u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
