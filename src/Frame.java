@@ -4,20 +4,19 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 
-public class ClientFrame {
+public class Frame {
 
     private static final String SERVER_IP = "127.0.0.1";
     private static final int SERVER_PORT = 12345;
     private boolean isConnected = false;
     private Socket soc;
-    private BufferedReader in;
-    private PrintWriter out;
+    private DataInputStream in;
+    private DataOutputStream out;
 
     private JFrame frame;
     private JTextPane textPane;
@@ -25,11 +24,11 @@ public class ClientFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new ClientFrame();
+            new Frame();
         });
     }
 
-    public ClientFrame() {
+    public Frame() {
         initializeGUI();
     }
 
@@ -68,11 +67,11 @@ public class ClientFrame {
     private void connectToServer(String userInput) {
         try {
             soc = new Socket(SERVER_IP, SERVER_PORT);
-            in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-            out = new PrintWriter(soc.getOutputStream(), true);
+            in = new DataInputStream(soc.getInputStream());
+            out = new DataOutputStream(soc.getOutputStream());
 
             // Connection verification
-            appendToTextArea(in.readLine());
+            appendToTextArea(in.readUTF());
             isConnected = true;
 
         } catch (IOException e) {
@@ -101,6 +100,7 @@ public class ClientFrame {
         });
     }
 
+
     // Process input
     private void processInput(String userInput) {
         String[] parts = userInput.split(" ");
@@ -124,20 +124,6 @@ public class ClientFrame {
             appendToTextArea("Available commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?");
         } else if (!("/join".equals(parts[0])) || parts.length != 3) {
             appendToTextArea("Error: Command parameters do not match or is not allowed.");
-        } else if ("/register".equals(parts[0]) || "/store".equals(parts[0]) || "/dir".equals(parts[0]) || "/get".equals(parts[0])) {
-            
-            try {
-                out.println(userInput);
-                String serverResponse;
-                
-                while ((serverResponse = in.readLine()) != null) {
-                    appendToTextArea(serverResponse);
-                    break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            
         } else {
             String serverIp = parts[1];
             int port;

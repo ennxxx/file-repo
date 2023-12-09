@@ -4,14 +4,13 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-public class FileExchangeServer {
+public class Server {
 
-    // Map to store handles (alias) associated with client sockets
     private static final Map<String, Socket> clientHandles = new HashMap<>();
     private static final String SERVER_DIRECTORY = "../ServerDirectory";
     private static final String CLIENT_DIRECTORY = "../ClientDirectory";
@@ -23,11 +22,9 @@ public class FileExchangeServer {
             ServerSocket serverSocket = new ServerSocket(12345);
 
             while (true) {
-                // Wait for a client to connect
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
 
-                // Handle client communication in a separate thread
                 new Thread(() -> handleClient(clientSocket)).start();
             }
         } catch (IOException e) {
@@ -37,25 +34,21 @@ public class FileExchangeServer {
 
     private static void handleClient(Socket clientSocket) {
         try {
-            // Create input and output streams for communication with the client
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-    
-            // Initial greeting message to the client
-            out.println("Server says: Connection to the File Exchange Server is successful!");
-        
-            // Handle client commands in a loop
+            DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+            DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+
+            out.writeUTF("Server says: Connection to the File Exchange Server is successful!");
+
             String command;
-            while ((command = in.readLine()) != null) {
+            while ((command = in.readUTF()) != null) {
                 if (command.startsWith("/leave")) {
-                    out.println("Server says: Connection closed. Thank you!");
-                }
-                else if (command.startsWith("/register")) {
+                    out.writeUTF("Server says: Connection closed. Thank you!");
+                    break;
+                } else if (command.startsWith("/register")) {
                     registerHandle(command, out, clientSocket);
                 } else if (command.startsWith("/?")) {
-                    out.println();
+                    out.writeUTF("");
                 } else {
-                    // Check if client has already registered
                     if (getClientHandle(clientSocket) != "Unknown") {
                         if (command.startsWith("/store")) {
                             sendFile(command, out, clientSocket);
@@ -64,50 +57,56 @@ public class FileExchangeServer {
                         } else if (command.startsWith("/get")) {
                             fetchFile(command, out);
                         } else {
-                            out.println("Error: Command not found.");
+                            out.writeUTF("Error: Command not found.");
                         }
                     } else {
-                        out.println("Error: Please register before using these commands.");
+                        out.writeUTF("Error: Please register before using these commands.");
                     }
                 }
             }
-    
-            // Client has disconnected
-            out.println("Server says: Connection closed. Thank you!");
+
+            out.writeUTF("Server says: Connection closed. Thank you!");
             System.out.println("Client disconnected: " + clientSocket.getRemoteSocketAddress());
+
             in.close();
             out.close();
             clientSocket.close();
-    
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
-    // Register a unique handle or alias 
-    private static void registerHandle(String command, PrintWriter out, Socket clientSocket) {
-        // Extract the handle/alias from the command
+
+    private static void registerHandle(String command, DataOutputStream out, Socket clientSocket) {
         String[] tokens = command.split("\\s+");
 
         if (tokens.length == 2) {
             String handle = tokens[1].trim();
 
-            // Check if the handle is already registered
             if (clientHandles.containsKey(handle)) {
-                out.println("Error: Registration failed. Handle or alias already exists.");
+                try {
+                    out.writeUTF("Error: Registration failed. Handle or alias already exists.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else {
-                // Register the handle
                 clientHandles.put(handle, clientSocket);
-                out.println("Welcome " + handle + "!");
+                try {
+                    out.writeUTF("Welcome " + handle + "!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         } else {
-            out.println("Error: Registration failed. Handle or alias cannot be empty.");
+            try {
+                out.writeUTF("Error: Registration failed. Handle or alias cannot be empty.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    // Get name of client
     private static String getClientHandle(Socket clientSocket) {
-        // Find the handle associated with the clientSocket
         for (Map.Entry<String, Socket> entry : clientHandles.entrySet()) {
             if (entry.getValue() == clientSocket) {
                 return entry.getKey();
@@ -116,44 +115,56 @@ public class FileExchangeServer {
         return "Unknown";
     }
 
-    // Send file to server
-    private static void sendFile(String command, PrintWriter out, Socket clientSocket) {
-        // Extract the filename from the command
+    private static void broadcastMessage(String message) {
+        for (Map.Entry<String, Socket> entry : clientHandles.entrySet()) {
+            Socket clientSocket = entry.getValue();
+            try {
+                DataOutputStream clientOut = new DataOutputStream(clientSocket.getOutputStream());
+                clientOut.writeUTF(message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void sendFile(String command, DataOutputStream out, Socket clientSocket) {
         String[] tokens = command.split("\\s+");
-    
+
         if (tokens.length == 2) {
             String filename = tokens[1];
             Path clientFilePath = Paths.get(CLIENT_DIRECTORY, filename);
             Path serverFilePath = Paths.get(SERVER_DIRECTORY, filename);
-    
+
             if (Files.exists(clientFilePath)) {
                 try {
-                    // Read file content
                     byte[] fileContent = Files.readAllBytes(clientFilePath);
-    
-                    // Write file content to server directory
                     Files.write(serverFilePath, fileContent);
-    
-                    // Get current timestamp
+
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     String timestamp = dateFormat.format(new Date());
-    
-                    // Broadcast the message to all connected clients
+
                     String message = String.format("%s<%s>: Uploaded %s.", getClientHandle(clientSocket), timestamp, filename);
-                    out.println(message);
+                    broadcastMessage(message);
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                    out.println("Error: Unable to send the file.");
+                    try {
+                        out.writeUTF("Error: Unable to send the file.");
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
                 }
             } else {
-                out.println("Error: File not found on the client side.");
+                try {
+                    out.writeUTF("Error: File not found on the client side.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        } 
+        }
     }
 
-    // Request directory from server
-    private static void requestDirectory(PrintWriter out) {
+    private static void requestDirectory(DataOutputStream out) {
         File serverDirectory = new File(SERVER_DIRECTORY);
         File[] files = serverDirectory.listFiles();
 
@@ -162,14 +173,21 @@ public class FileExchangeServer {
             for (int i = 0; i < files.length; i++) {
                 fileNames[i] = files[i].getName();
             }
-            out.println("Server Directory: " + String.join(", ", fileNames));
+            try {
+                out.writeUTF("Server Directory: " + String.join(", ", fileNames));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else {
-            out.println("Server says: No files in the server directory.");
+            try {
+                out.writeUTF("Server says: No files in the server directory.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    // Fetch file from server
-    private static void fetchFile(String command, PrintWriter out) {
+    private static void fetchFile(String command, DataOutputStream out) {
         String[] tokens = command.split("\\s+");
         if (tokens.length == 2) {
             String filename = tokens[1];
@@ -181,16 +199,28 @@ public class FileExchangeServer {
                     byte[] fileContent = Files.readAllBytes(serverFilePath);
                     Files.write(clientFilePath, fileContent);
                     clientFilePath.toFile().getParentFile().list();
-                    out.println("File received from Server: " + filename);
+                    out.writeUTF("File received from Server: " + filename);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    out.println("Error: Unable to fetch or save the file.");
+                    try {
+                        out.writeUTF("Error: Unable to fetch or save the file.");
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
                 }
             } else {
-                out.println("Error: File not found on the server.");
+                try {
+                    out.writeUTF("Error: File not found on the server.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         } else {
-            out.println("Error: Command parameters do not match or is not allowed.");
+            try {
+                out.writeUTF("Error: Command parameters do not match or are not allowed.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
