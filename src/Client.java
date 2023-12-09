@@ -11,7 +11,7 @@ public class Client {
     private static final int SERVER_PORT = 12345;
 
     public static void main(String[] args) {
-        System.out.println("Client started...");
+        System.out.println("\u001B[32mClient started...\u001B[0m");
 
         try {
             // Establish connection with the server
@@ -28,16 +28,7 @@ public class Client {
                 // Request for Syntax commands
                 isValid = true;
                 if (input.equals("/?")) {
-                    System.out.print("""
-                            Available commands:
-                            /join <server_ip_add> <port>
-                            /leave
-                            /register <handle>
-                            /store <filename>
-                            /dir
-                            /get <filename>
-                            /?
-                            """);
+                    System.out.println("\u001B[32mAvailable commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?" + "\u001B[0m");
                     isValid = false;
                 } else if (input.equals("/leave")) {
                     System.out.println("Error: Disconnection failed. Please connect to the server first.");
@@ -85,31 +76,31 @@ public class Client {
                         }
                     } catch (IOException e) {
                         // Handle communication error with the server
-                        System.out.println("Error: Communication with the server failed. Exiting...");
                         System.exit(1);
                     }
                 }).start();
+
+                System.out.println("\u001B[32m\nYou can now interact with the server!");
+                System.out.println("(Type \"/?\" to check for the commands)");
+                System.out.println("--------------------------------------\u001B[0m");
+
 
                 // Start a thread to read user input and send it to the server
                 BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));
                 while (true) {
                     try {
                         // Print a prompt for the user
-                        System.out.print("Enter command: ");
                         String userInputString = userInputReader.readLine();
 
                         out.writeUTF(userInputString);
 
                         // User wants to check all commands
                         if ("/?".equals(userInputString)) {
-                            System.out.print("Available commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?");
+                            System.out.println("\u001B[32mAvailable commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?" + "\u001B[0m");
                         }
-
                         // Check if the user wants to leave the server
-                        if ("/leave".equals(userInputString)) {
-                            String serverResponse = in.readUTF();
-                            System.out.println(serverResponse);
-                            break;
+                        else if ("/leave".equals(userInputString)) {
+                            break; // exit the loop when leaving the server
                         }
                     } catch (IOException e) {
                         // Handle communication error with the server
